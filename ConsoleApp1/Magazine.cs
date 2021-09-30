@@ -1,93 +1,129 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Text;
 
-namespace shrap_lab_1
+namespace sharp_lab_1
 {
-    class Magazine
+    class Magazine:Edition
     {
-
-        private string magazine_name;
-        private Frequency freq;
-        private DateTime magazine_date;
-        private int circulation;
-        private Article[] articles;
+        private Frequency frequency;
+        private ArrayList authors;
+        private ArrayList articles;
+        private ArrayList editors;
 
 
+        //CONSTRUCTORS
 
-
-        public Magazine(string magazine_nameValue, Frequency freqValue, DateTime magazine_dateValue, int circulationValue)
+        
+        public Magazine(Frequency freqValue, string nameValue, DateTime dateValue, int printingValue): base(nameValue, dateValue, printingValue)
         {
-            magazine_name = magazine_nameValue;
-            freq = freqValue;
-            magazine_date = magazine_dateValue;
-            circulation = circulationValue;
-            articles = null;
+            frequency = freqValue;
         }
 
-        public Magazine(): this ("Magazine name", Frequency.Weekly, new DateTime(1970,1,1),100) 
-        {
+        public Magazine(): this ( Frequency.Weekly, "Magazine name",new DateTime(1970,1,1),0) 
+        { }
 
-        }
-
-        public string MagazineName
+        
+        //PROPERTIES
+        
+        
+        public Edition Edition
         {
-            get => magazine_name;
-            set => magazine_name = value;
+            get => new Edition(name,date,printing);
+            set
+            {
+                date = value.Date;
+                printing = value.Printing;
+                name = value.Name;
+            }
         }
         public Frequency Freq
         {
-            get => freq;
-            set => freq = value;
+            get => frequency;
+            set => frequency = value;
         }
-        public DateTime MagazineDate
-        {
-            get => magazine_date;
-            set => magazine_date = value;
-        }
-        public int Circulation
-        {
-            get => circulation;
-            set => circulation = value;
-        }
-        public Article[] ListOfArticles
+        
+
+        public ArrayList Articles
         {
             get => articles;
             set => articles = value;
         }
+
+        public ArrayList Editors
+        {
+            get => editors;
+            set => editors = value;
+        }
+        
+        
+        //METHODS
+        
+        
         public double average_article_rating
         {
             get
             {
                 double rate = 0;
                 if (articles == null) return 0;
-                foreach (var art in articles)
+                foreach (object article in articles)
                 {
-                    rate += art.rating;
+                    Article article_ = article as Article;
+                    rate += article_.rating;
                 }
 
-                return rate / articles.Length;
+                return rate / articles.Count;
             }
         }
-        public bool this[Frequency f] => freq == f;
+
+        public IEnumerator GetEnumeratorByRating(double rating)
+        {
+            
+            foreach (var article in articles)
+            {
+                Article art = article as Article;
+                if (art.rating > rating)
+                {
+                    yield return art;
+                }
+            }
+
+            
+        }
+
+        public IEnumerator GetEnumeratorByName(string name)
+        {
+            foreach (var article in articles)
+            {
+                Article art = article as Article;
+                if (art.name.Contains(name))
+                    yield return art;
+            }
+        }
+        
+        public void AddEditors(params Article[] newEditors)
+        {
+            if (editors == null)
+            {
+                editors = new ArrayList();
+                return;
+            }
+            editors.AddRange(newEditors);
+        }
 
         public void AddArticles(params Article[] newArticles)
         {
             if (articles == null)
             {
-                articles = newArticles;
+                articles = new ArrayList();
                 return;
             }
-            int num = articles.Length;
-            Array.Resize<Article>(ref articles, num + newArticles.Length);
-            for (int i = 0; i < newArticles.Length; i++)
-            {
-                articles[num + i] = newArticles[i];
-            }
+            articles.AddRange(newArticles);
         }
         public override string ToString()
         {
-            string ans = "";
+            string ans="";
             if (articles != null)
             {
                 foreach (Article art in articles)
@@ -96,12 +132,38 @@ namespace shrap_lab_1
                 }
             }
 
-            return magazine_name + " " + freq.ToString() + " " + magazine_date.ToShortDateString() + " " + circulation.ToString() + " " + ans;
+            if (authors != null)
+            {
+                ans += " | Authors: ";
+                foreach (object? author in authors)
+                {
+                    ans += author.ToString()+", ";
+                }
+            }
+
+            return base.ToString() + " | " + frequency.ToString() + " | Articles: " + ans;
         }
+
         public virtual string ToShortString()
         {
-            return magazine_name + " " + freq.ToString() + " " + magazine_date + " " + circulation.ToString() + " " + Convert.ToString(average_article_rating);
+            return name + " | " + date + " | " + printing + " | " + frequency;
         }
+
+        public override object DeepCopy()
+        {
+            Magazine new_one = new Magazine(frequency, name, date, printing);
+            new_one.articles = articles;
+            new_one.authors = authors;
+            new_one.editors = editors;
+            return new_one;
+        }
+        
+        
+        //OPERATORS
+        
+        
+        public bool this[Frequency f] => frequency == f;
+
 
     }
 
