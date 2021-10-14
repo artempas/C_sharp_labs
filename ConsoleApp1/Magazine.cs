@@ -19,6 +19,9 @@ namespace sharp_lab_1
         public Magazine(Frequency freqValue, string nameValue, DateTime dateValue, int printingValue): base(nameValue, dateValue, printingValue)
         {
             frequency = freqValue;
+            articles = new ArrayList(0);
+            authors = null;
+            editors = null;
         }
 
         public Magazine(): this ( Frequency.Weekly, "Magazine name",new DateTime(1970,1,1),0) 
@@ -77,7 +80,7 @@ namespace sharp_lab_1
             }
         }
 
-        public IEnumerator GetEnumeratorByRating(double rating)
+        public IEnumerable GetEnumeratorByRating(double rating)
         {
             
             foreach (var article in articles)
@@ -85,14 +88,14 @@ namespace sharp_lab_1
                 Article art = article as Article;
                 if (art.rating > rating)
                 {
-                    yield return art;
+                    yield return article;
                 }
             }
 
             
         }
 
-        public IEnumerator GetEnumeratorByName(string name)
+        public IEnumerable GetEnumeratorByName(string name)
         {
             foreach (var article in articles)
             {
@@ -102,23 +105,18 @@ namespace sharp_lab_1
             }
         }
         
-        public void AddEditors(params Article[] newEditors)
+        public void AddEditors(params Person[] newEditors)
         {
             if (editors == null)
-            {
                 editors = new ArrayList();
-                return;
-            }
             editors.AddRange(newEditors);
         }
 
         public void AddArticles(params Article[] newArticles)
         {
             if (articles == null)
-            {
                 articles = new ArrayList();
-                return;
-            }
+
             articles.AddRange(newArticles);
         }
         public override string ToString()
@@ -126,22 +124,31 @@ namespace sharp_lab_1
             string ans="";
             if (articles != null)
             {
+                ans += "\n| Articles:\n";
                 foreach (Article art in articles)
                 {
-                    ans += art.ToString() + ", ";
+                    ans += art.ToString() + "\n";
                 }
             }
 
             if (authors != null)
             {
-                ans += " | Authors: ";
+                ans += " | Authors:\n";
                 foreach (object? author in authors)
                 {
-                    ans += author.ToString()+", ";
+                    ans += author.ToString()+"\n";
+                }
+            }
+            if (editors != null)
+            {
+                ans += "| Editors:\n";
+                foreach (object? editor in editors)
+                {
+                    ans += editor.ToString() + "\n";
                 }
             }
 
-            return base.ToString() + " | " + frequency.ToString() + " | Articles: " + ans;
+            return base.ToString() + " | " + frequency.ToString()  + ans;
         }
 
         public virtual string ToShortString()
@@ -158,10 +165,47 @@ namespace sharp_lab_1
             return new_one;
         }
         
-        
+        public IEnumerator GetEnumerator()
+        {
+            return new MagazineEnumerator(articles, editors);
+        }
+
+        public IEnumerable GetEnumertorAuthorIsEditor()
+        {
+            foreach(var art in articles)
+            {
+                Article article = art as Article;
+                if (editors.Contains(article.author))
+                {
+                    yield return art;
+                }
+            }
+        }
+
+        public IEnumerable GetEnumertorEditorIsNotAuthor()
+        {
+            bool isAuthor = false;
+            foreach (var ed in editors)
+            {
+                isAuthor = false;
+                Person editor = ed as Person;
+                foreach (var art in articles)
+                {
+
+                    Article article = art as Article;
+                    if (editor == article.author)
+                    {
+                        isAuthor = true;
+                        break;
+                    }
+                }
+                if (!isAuthor) { yield return ed; }
+            }
+        }
+
         //OPERATORS
-        
-        
+
+
         public bool this[Frequency f] => frequency == f;
 
 
