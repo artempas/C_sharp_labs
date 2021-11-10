@@ -5,12 +5,16 @@ namespace sharp_lab_1
 {
     public class Edition
     {
+        #region Fields
         protected string name;
         protected DateTime date;
         protected int printing;
+        #endregion
+
+        #region CONSTRUCTORS
 
         
-        //CONSTRUCTORS
+
         
         
         public Edition(string nameValue, DateTime dateValue, int printingValue)
@@ -23,8 +27,9 @@ namespace sharp_lab_1
         public Edition() : this("Edition Name", new DateTime(1970,01,01),0)
         {}
 
+        #endregion
         
-        //PROPERTIES
+        #region PROPERTIES
         
         
         public string Name
@@ -48,9 +53,9 @@ namespace sharp_lab_1
                 else throw new InvalidDataException("Тираж не может быть отрицательным");
             }
         }
-
+        #endregion
         
-        //METHODS
+        #region METHODS
         
         
         public override bool Equals(object? obj)
@@ -69,12 +74,13 @@ namespace sharp_lab_1
         {
             return name+" | "+date.ToShortDateString()+" | "+printing;
         }
+        #endregion
         
-        
-        //OPERATORS
+        #region OPERATORS
         
         
         public static bool operator ==(Edition e1, Edition e2) => e1.Equals(e2); 
         public static bool operator !=(Edition e1, Edition e2) => !e1.Equals(e2);
+        #endregion
     }
 }

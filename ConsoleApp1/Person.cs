@@ -5,19 +5,19 @@ using System.Text;
 
 namespace sharp_lab_1
 {
-    class Person
+    public class Person
     {
 
-        string name;
-        string surname;
-        DateTime birthday;
+        string _name;
+        string _surname;
+        DateTime _birthday;
         
         //CONSTRUCTORS
         public Person(string nameValue, string surnameValue, DateTime birthdayValue)
         {
-            name = nameValue;
-            surname = surnameValue;
-            birthday = birthdayValue;
+            _name = nameValue;
+            _surname = surnameValue;
+            _birthday = birthdayValue;
 
         }
         public Person() : this("Иван", "Иванов", new DateTime (2000, 12, 27))
@@ -27,30 +27,30 @@ namespace sharp_lab_1
         //PROPERTIES
         public string Name
         {
-            get => name;
-            set => name = value;
+            get => _name;
+            set => _name = value;
         }
         public string Surname
         {
             get
             {
-                return surname;
+                return _surname;
             }
             set
             {
-                surname = value;
+                _surname = value;
             }
         }
         public DateTime Birthday
         {
             get
             {
-                return birthday;
+                return _birthday;
             }
 
             set
             {
-                birthday = value;
+                _birthday = value;
             }
         }
 
@@ -58,11 +58,11 @@ namespace sharp_lab_1
         {
             get
             {
-                return birthday.Year;
+                return _birthday.Year;
             }
             set
             {
-                birthday = new DateTime(value, birthday.Month, birthday.Day);
+                _birthday = new DateTime(value, _birthday.Month, _birthday.Day);
             }
         }
 
@@ -72,22 +72,22 @@ namespace sharp_lab_1
         public override bool Equals(object? obj)
         {
             Person p = obj as Person;
-            return (name == p.name && surname==p.surname && p.birthday == birthday);
+            return (_name == p._name && _surname==p._surname && p._birthday == _birthday);
         }
 
 
         public override int GetHashCode()
         {
-            return surname.GetHashCode()+name.GetHashCode()+birthday.GetHashCode();
+            return _surname.GetHashCode()+_name.GetHashCode()+_birthday.GetHashCode();
         }
 
 
-        public object DeepCopy() => new Person(name, surname, birthday);
+        public object DeepCopy() => new Person(_name, _surname, _birthday);
         
 
         public override string ToString()
         {
-           return Name+" "+ Surname+" "+ birthday.ToShortDateString();
+           return Name+" "+ Surname+" "+ _birthday.ToShortDateString();
 
         }
         public virtual string ToShortString()

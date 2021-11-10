@@ -1,35 +1,50 @@
 ﻿using System;
 using System.Collections;
+using System.Collections.Generic;
 
 namespace sharp_lab_1
 {
 	public class MagazineEnumerator:IEnumerator
 	{
-		ArrayList articles;
-		ArrayList editors;
-		int position = -1;
-		public MagazineEnumerator(ArrayList articlesValue, ArrayList editorsValue)
+		#region Fields
+		List<Article> _articles;
+		List<Person> _editors;
+		int _position = -1;
+		#endregion
+		
+		#region Constructors
+
+		
+
+		public MagazineEnumerator(List<Article> articlesValue, List<Person> editorsValue)
 		{
-			articles = articlesValue;
-			editors = editorsValue;
+			_articles = articlesValue;
+			_editors = editorsValue;
 		}
+		
+		#endregion
+		
+		#region Methods
+
+		
+
 		public object Current
 		{
 			get
 			{
-				if (position == -1 || position >= articles.Count) throw new InvalidOperationException("IndexError");
-				return articles[position];
+				if (_position == -1 || _position >= _articles.Count) throw new InvalidOperationException("IndexError");
+				return _articles[_position];
 			}
 		}
 		public bool MoveNext()
 		{
 			while (true)
 			{
-				if (position < articles.Count - 1)
+				if (_position < _articles.Count - 1)
 				{
-					position++;
-					Article art = articles[position] as Article;
-					if (editors.Contains(art.author))
+					_position++;
+					Article art = _articles[_position] as Article;
+					if (_editors.Contains(art.Author))
 					{
 						continue;
 					}
@@ -46,7 +61,9 @@ namespace sharp_lab_1
 		}
 		public void Reset()
 		{
-			position = -1;
+			_position = -1;
 		}
+		#endregion
+
 	}
 }

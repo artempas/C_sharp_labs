@@ -5,35 +5,39 @@ using System.Text;
 
 namespace sharp_lab_1
 {
-    class Magazine:Edition
+    public class Magazine : Edition
     {
-        private Frequency frequency;
-        private ArrayList authors;
-        private ArrayList articles;
-        private ArrayList editors;
+        #region Fields
 
+        private Frequency _frequency;
+        private List<Person> _authors;
+        private List<Article> _articles;
+        private List<Person> _editors;
 
-        //CONSTRUCTORS
+        #endregion
 
-        
-        public Magazine(Frequency freqValue, string nameValue, DateTime dateValue, int printingValue): base(nameValue, dateValue, printingValue)
+        #region CONSTRUCTORS
+
+        public Magazine(Frequency freqValue, string nameValue, DateTime dateValue, int printingValue) : base(nameValue,
+            dateValue, printingValue)
         {
-            frequency = freqValue;
-            articles = new ArrayList(0);
-            authors = null;
-            editors = null;
+            _frequency = freqValue;
+            _articles = new List<Article>(0);
+            _authors = new List<Person>(0);
+            _editors = new List<Person>(0);
         }
 
-        public Magazine(): this ( Frequency.Weekly, "Magazine name",new DateTime(1970,1,1),0) 
-        { }
+        public Magazine() : this(Frequency.Weekly, "Magazine name", new DateTime(1970, 1, 1), 0)
+        {
+        }
 
-        
-        //PROPERTIES
-        
-        
+        #endregion
+
+        #region PROPERTIES
+
         public Edition Edition
         {
-            get => new Edition(name,date,printing);
+            get => new Edition(name, date, printing);
             set
             {
                 date = value.Date;
@@ -41,141 +45,153 @@ namespace sharp_lab_1
                 name = value.Name;
             }
         }
+
         public Frequency Freq
         {
-            get => frequency;
-            set => frequency = value;
-        }
-        
-
-        public ArrayList Articles
-        {
-            get => articles;
-            set => articles = value;
+            get => _frequency;
+            set => _frequency = value;
         }
 
-        public ArrayList Editors
+
+        public List<Article> Articles
         {
-            get => editors;
-            set => editors = value;
+            get => _articles;
+            set => _articles = value;
         }
-        
-        
-        //METHODS
-        
-        
-        public double average_article_rating
+
+        public List<Person> Editors
+        {
+            get => _editors;
+            set => _editors = value;
+        }
+
+        #endregion
+
+        #region METHODS
+
+        public void SortArticlesByTitle()
+        {
+            Articles.Sort(); // uses CompareTo
+        }
+
+        public void SortArticlesByAuthorSurname()
+        {
+            Articles.Sort(new Article()); //uses Compare
+        }
+
+        public void SortArticlesByRating()
+        {
+            Articles.Sort(new ArticleComparerByRate()); //uses comparator by rating
+        }
+
+        public double AverageArticleRating
         {
             get
             {
                 double rate = 0;
-                if (articles == null) return 0;
-                foreach (object article in articles)
+                if (_articles == null) return 0;
+                foreach (object art in _articles)
                 {
-                    Article article_ = article as Article;
-                    rate += article_.rating;
+                    Article article = art as Article;
+                    rate += article.Rating;
                 }
 
-                return rate / articles.Count;
+                return rate / _articles.Count;
             }
         }
 
         public IEnumerable GetEnumeratorByRating(double rating)
         {
-            
-            foreach (var article in articles)
+            foreach (var article in _articles)
             {
                 Article art = article as Article;
-                if (art.rating > rating)
+                if (art.Rating > rating)
                 {
                     yield return article;
                 }
             }
-
-            
         }
 
         public IEnumerable GetEnumeratorByName(string name)
         {
-            foreach (var article in articles)
+            foreach (var article in _articles)
             {
                 Article art = article as Article;
-                if (art.name.Contains(name))
+                if (art.Name.Contains(name))
                     yield return art;
             }
         }
-        
+
         public void AddEditors(params Person[] newEditors)
         {
-            if (editors == null)
-                editors = new ArrayList();
-            editors.AddRange(newEditors);
+            _editors.AddRange(newEditors);
         }
 
         public void AddArticles(params Article[] newArticles)
         {
-            if (articles == null)
-                articles = new ArrayList();
-
-            articles.AddRange(newArticles);
+            _articles.AddRange(newArticles);
         }
+
         public override string ToString()
         {
-            string ans="";
-            if (articles != null)
+            string ans = "";
+
+            if (_articles != null)
             {
                 ans += "\n| Articles:\n";
-                foreach (Article art in articles)
+                foreach (Article art in _articles)
                 {
                     ans += art.ToString() + "\n";
                 }
             }
 
-            if (authors != null)
+            if (_authors != null)
             {
                 ans += " | Authors:\n";
-                foreach (object? author in authors)
+                foreach (object? author in _authors)
                 {
-                    ans += author.ToString()+"\n";
+                    ans += author.ToString() + "\n";
                 }
             }
-            if (editors != null)
+
+            if (_editors != null)
             {
                 ans += "| Editors:\n";
-                foreach (object? editor in editors)
+                foreach (object? editor in _editors)
                 {
                     ans += editor.ToString() + "\n";
                 }
             }
 
-            return base.ToString() + " | " + frequency.ToString()  + ans;
+            return base.ToString() + " | " + _frequency.ToString() + ans;
         }
 
         public virtual string ToShortString()
         {
-            return name + " | " + date + " | " + printing + " | " + frequency;
+            return
+                $"Name:{name} | Date:{date} | Printing: {printing} | frequency: {_frequency} | Authors: {_authors.Count} | Editors: {_editors.Count} | Atricles: {_articles.Count}";
         }
 
         public override object DeepCopy()
         {
-            Magazine new_one = new Magazine(frequency, name, date, printing);
-            new_one.articles = articles;
-            new_one.authors = authors;
-            new_one.editors = editors;
-            return new_one;
+            Magazine newOne = new Magazine(_frequency, name, date, printing);
+            newOne._articles = _articles;
+            newOne._authors = _authors;
+            newOne._editors = _editors;
+            return newOne;
         }
-        
+
         public IEnumerator GetEnumerator()
         {
-            return new MagazineEnumerator(articles, editors);
+            return new MagazineEnumerator(_articles, _editors);
         }
 
         public IEnumerable GetEnumertorAuthorIsEditor()
         {
-            foreach(var art in articles)
+            foreach (var art in _articles)
             {
                 Article article = art as Article;
-                if (editors.Contains(article.author))
+                if (_editors.Contains(article.Author))
                 {
                     yield return art;
                 }
@@ -185,31 +201,54 @@ namespace sharp_lab_1
         public IEnumerable GetEnumertorEditorIsNotAuthor()
         {
             bool isAuthor = false;
-            foreach (var ed in editors)
+            foreach (var ed in _editors)
             {
                 isAuthor = false;
                 Person editor = ed as Person;
-                foreach (var art in articles)
+                foreach (var art in _articles)
                 {
-
                     Article article = art as Article;
-                    if (editor == article.author)
+                    if (editor == article.Author)
                     {
                         isAuthor = true;
                         break;
                     }
                 }
-                if (!isAuthor) { yield return ed; }
+
+                if (!isAuthor)
+                {
+                    yield return ed;
+                }
             }
         }
 
-        //OPERATORS
+        public void PrintArticles()
+        {
+            Console.ForegroundColor = ConsoleColor.White;
+            Console.WriteLine("--------------------------------------------------------------------------");
+            Console.ForegroundColor = ConsoleColor.Yellow;
+            Console.WriteLine(String.Format("|{0,30}|{1,30}|{2,10}|", "Title", "Author", "Rating"));
+            Console.ForegroundColor = ConsoleColor.White;
+            Console.WriteLine("--------------------------------------------------------------------------");
+            Console.ForegroundColor = ConsoleColor.Green;
+            foreach (Article article in _articles)
+                Console.WriteLine(String.Format("|{0,30}|{1,30}|{2,10}|", 
+                    article.Name.Length <= 30 ? article.Name : article.Name.Substring(0, 30),
+                    (article.Author.Name + " " + article.Author.Surname).Length <= 30 ? (article.Author.Name + " " + article.Author.Surname) : (article.Author.Name + " " + article.Author.Surname).Substring(0,30)
+                    , Math.Round(article.Rating,2)));
+            Console.ForegroundColor = ConsoleColor.White;
+            Console.WriteLine("--------------------------------------------------------------------------");
+            Console.ResetColor();
 
 
-        public bool this[Frequency f] => frequency == f;
+        }
 
+        #endregion
 
+        #region OPERATORS
+
+        public bool this[Frequency f] => _frequency == f;
+
+        #endregion
     }
-
-
 }
