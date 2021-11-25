@@ -25,6 +25,7 @@ namespace sharp_lab_1
             _articles = new List<Article>(0);
             _authors = new List<Person>(0);
             _editors = new List<Person>(0);
+            
         }
 
         public Magazine() : this(Frequency.Weekly, "Magazine name", new DateTime(1970, 1, 1), 0)

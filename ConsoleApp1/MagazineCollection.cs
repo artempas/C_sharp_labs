@@ -1,102 +1,98 @@
-﻿using System.Collections.Generic;
-using System;
+﻿using System;
+using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 
 namespace sharp_lab_1
-{ 
+{
+
     public delegate TKey KeySelector<TKey>(Magazine mg);
-    class MagazineCollection<TKey>
+    public class MagazineCollection<TKey>
     {
         #region Fields
 
-        private Dictionary<TKey, Magazine> _collection = new Dictionary<TKey, Magazine>();
-        private KeySelector<TKey> _ks;
+        private Dictionary<TKey, Magazine> collection = new Dictionary<TKey, Magazine>();
+        private KeySelector<TKey> ks;
+
+        #endregion
+
+        #region Constructors 
         
-        #endregion
-
-        #region Constructor
-
-        public MagazineCollection(KeySelector<TKey> ks)
+        public MagazineCollection(KeySelector<TKey> _ks)
         {
-            _ks = ks;
-        }
-
-        #endregion
-
-        #region Methods
-        /// <summary>
-        /// Adds specified amount of obj to collection with default parameters
-        /// </summary>
-        /// <param name="n">amount of obj</param>
-        void AddDefaults(int n)
-        {
-            Magazine magazine = new Magazine();
-            _collection.Add(_ks(magazine), magazine);
-        }
-
-        /// <summary>
-        /// add list of magazines to the collection
-        /// </summary>
-        /// <param name="toAdd">list of magazines</param>
-        void AddMagazines(Magazine[] toAdd)
-        {
-            foreach (var mag in toAdd)
-            {
-                Magazine magazine = mag as Magazine;
-                _collection.Add(_ks(magazine), magazine);
-            }
-        }
-
-        public override string ToString()
-        {
-            string ans = "";
-            int cnt = 1;
-            foreach (var (key, value) in _collection)
-            {
-                ans += cnt++.ToString() + ")\n";
-                ans+=value.ToString();
-            }
-
-            return ans;
-        }
-
-        public string ToShortString()
-        {
-            string ans = "";
-            int cnt = 1;
-            foreach (var (key, value) in _collection)
-            {
-                ans += cnt++.ToString() + ")\n";
-                ans+=value.ToShortString();
-            }
-
-            return ans;
-        }
-        /// <summary>
-        /// Returns collection of magazines made of magazines with a specified Frequency
-        /// </summary>
-        /// <param name="value">Value of frequency filter</param>
-        /// <returns></returns>
-        IEnumerable<KeyValuePair<TKey, Magazine>> FrequencyGroup(Frequency value)
-        {
-            return _collection.Where(pair => pair.Value[value]);
-        }
-
+            ks = _ks;
+        } 
 
         #endregion
 
         #region Properties
+        
+        public string CollectionName { get; set; }
 
-        double MaxAverageRating
+        #endregion
+
+        #region Methods
+
+        public override string ToString()
         {
-            get
+            string str = $"This magazine contains {collection.Count} magazines: \n";
+            foreach (var mag in collection.Values)
             {
-                return _collection.Values.Max(m => m.AverageArticleRating);
+                str += mag.ToString();
             }
+
+            return str;
         }
 
-        public IEnumerable<IGrouping<Frequency, KeyValuePair<TKey, Magazine>>> GroupedByFrequency => _collection.GroupBy(mag => mag.Value.Freq);
+        public virtual string ToShortString()
+        {
+            string str = $"This magazine contains {collection.Count} magazines: \n";
+            foreach (var mag in collection.Values)
+            {
+                str += mag.ToShortString();
+            }
+
+            return str;
+        }
+
+        public bool Replace(Magazine mold, Magazine mnew)
+        {
+            var k = collection.FirstOrDefault(m => m.Value == mold).Key;
+            if (k == null) return false;
+            collection[k] = mnew;
+            MagazinePropertyChanged(Update.Replace, "None", k);
+            mold.PropertyChanged -= HandleEvent;
+            mnew.PropertyChanged += HandleEvent;
+            return true;
+        }
+
+        private void HandleEvent(object subject, EventArgs e)
+        {
+            var it = (PropertyChangedEventArgs) e;
+            var mg = (Magazine) subject;
+            var key = ks(mg);
+            MagazinePropertyChanged(Update.Property, it.PropertyName, key);
+        }
+
+        public void AddMagazine(Magazine m)
+        {
+            var key = ks(m);
+            collection.Add(key, m);
+            MagazinePropertyChanged(Update.Add, "None", key);
+            m.PropertyChanged += HandleEvent;
+        }
         
+
+        #endregion
+
+        #region Events
+
+        public MagazinesChangedHandler<TKey> MagazineChanged;
+
+        private void MagazinePropertyChanged(Update update, string name, TKey key)
+        {
+            MagazineChanged?.Invoke(this, new MagazinesChangedEventArgs<TKey>(CollectionName, update, name, key));
+        }
 
         #endregion
     }

@@ -1,14 +1,17 @@
 ﻿using System;
+using System.ComponentModel;
 using System.IO;
 
 namespace sharp_lab_1
 {
-    public class Edition
+    public class Edition: INotifyPropertyChanged
     {
         #region Fields
         protected string name;
         protected DateTime date;
         protected int printing;
+        public event PropertyChangedEventHandler PropertyChanged; 
+
         #endregion
 
         #region CONSTRUCTORS
@@ -41,7 +44,13 @@ namespace sharp_lab_1
         public DateTime Date
         {
             get => date;
-            set => date = value;
+            set
+            {
+                date = value;
+                
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs("release Date"));
+                
+            }
         }
 
         public int Printing
@@ -49,8 +58,15 @@ namespace sharp_lab_1
             get => printing;
             set
             {
-                if (value > 0) printing = value;
-                else throw new InvalidDataException("Тираж не может быть отрицательным");
+                if (value < 0)
+                {
+                    throw new InvalidDataException("Тираж не может быть отрицательным");
+                }
+
+                printing = value;
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs("circulation"));
+            
+                
             }
         }
         #endregion

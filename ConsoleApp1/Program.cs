@@ -21,136 +21,172 @@ namespace sharp_lab_1
     {
         static void Main(string[] args)
         {
-            #region lab3
+            #region lab4
+            KeySelector<String> selector = magazine => magazine.GetHashCode().ToString();
+            MagazineCollection<string> mgCollection = new MagazineCollection<string>(selector);
+            mgCollection.CollectionName = "Magazine Collection";
 
-            #region init
+            Magazine m1 = new Magazine();
+            Magazine m2 = new Magazine( Frequency.Monthly,"Some Name" ,new DateTime(1970,1,1), 999_999);
+            Magazine m3 = new Magazine(Frequency.Monthly,"New name",new DateTime(1980,1,1), 999_999);
+
+            Listener listener = new Listener();
+            // changes in collections
+            mgCollection.MagazineChanged += listener.NewEntryForCollection; 
+
+            // changes in properties
+            //m1.PropertyChanged += listener.NewEntryForProperty;
+            //m2.PropertyChanged += listener.NewEntryForProperty;
             
-            Random rnd = new Random();
-            Magazine mag = new Magazine(Frequency.Monthly, "Пятёрочка", new DateTime(2021, 10, 26), 69);
-            Person[] persons =
-            {
-                new Person("Lawrence", " Thomas", new DateTime(1975, 04, 26)),
-                new Person("Larry", "Patterson", new DateTime(1957, 8, 30)),
-                new Person("Beverly", "Kelly", new DateTime(1983, 7, 25)),
-                new Person("Kathleen", "Anderson", new DateTime(1935, 3, 15)),
-                new Person("Lillian", "Martin", new DateTime(rnd.Next(1950, 2003), rnd.Next(1, 12), rnd.Next(1, 31))),
-                new Person("Aaron", "Evans", new DateTime(rnd.Next(1950, 2003), rnd.Next(1, 12), rnd.Next(1, 31))),
-                new Person("Tina", "Taylor", new DateTime(rnd.Next(1950, 2003), rnd.Next(1, 12), rnd.Next(1, 31))),
-                new Person("Tina", "Taylor", new DateTime(rnd.Next(1950, 2003), rnd.Next(1, 12), rnd.Next(1, 31))),
-                new Person("Janice", "Morgan", new DateTime(rnd.Next(1950, 2003), rnd.Next(1, 12), rnd.Next(1, 31))),
-                new Person("Judy", "Hall", new DateTime(rnd.Next(1950, 2003), rnd.Next(1, 12), rnd.Next(1, 31))),
-                new Person("Judy", "Hall", new DateTime(rnd.Next(1950, 2003), rnd.Next(1, 12), rnd.Next(1, 31))),
-                new Person("Evelyn", "Johnson", new DateTime(rnd.Next(1950, 2003), rnd.Next(1, 12), rnd.Next(1, 31))),
-            };
-            Article[] articles =
-            {
-                new Article(persons[rnd.Next(9)], "How face masks affect young children", rnd.Next(4)+rnd.NextDouble()),
-                new Article(persons[rnd.Next(9)], "Why \"Agents of Doom\" threaten the world",
-                    rnd.Next(4)+rnd.NextDouble()),
-                new Article(persons[rnd.Next(9)], "Scotland's experiment to value nature", rnd.Next(4)+rnd.NextDouble()),
-                new Article(persons[rnd.Next(9)], "A better use for half Earth's land?", rnd.Next(4)+rnd.NextDouble()),
-                new Article(persons[rnd.Next(9)], "Can you grow coffee at home?", rnd.Next(4)+rnd.NextDouble()),
-                new Article(persons[rnd.Next(9)], "America's greatest source of emissions", rnd.Next(4)+rnd.NextDouble()),
-                new Article(persons[rnd.Next(9)], "Do we really need third vaccine doses?", rnd.Next(4)+rnd.NextDouble()),
-                new Article(persons[rnd.Next(9)], "Should young kids get the Covid-19 jab?",
-                    rnd.Next(4)+rnd.NextDouble()),
-                new Article(persons[rnd.Next(9)], "The unexpected benefits of tiger sharks",
-                    rnd.Next(4)+rnd.NextDouble()),
-                new Article(persons[rnd.Next(9)], "Costa Rica's answer to 'range anxiety'", rnd.Next(4)+rnd.NextDouble()),
-            };
-            Person[] editors_to_add = new Person[5];
-            int i = 0;
-            while (i < editors_to_add.Length)
-            {
-                int j = rnd.Next(9);
-                if (Array.IndexOf(editors_to_add, persons[j]) != -1) continue;
-                editors_to_add[i++] = persons[j];
-            }
-            #endregion
-
-            #region sort
+            // 1. Add new elements
+            mgCollection.AddMagazine(m1);
+            mgCollection.AddMagazine(m2);
             
-            mag.AddArticles(articles);
-            mag.AddEditors(editors_to_add);
-            mag.PrintArticles();
-            mag.SortArticlesByTitle();
-            Console.ForegroundColor = ConsoleColor.Red;
-            Console.WriteLine("Sorted by title");
-            Console.ResetColor();
-            mag.PrintArticles();
-            Console.ForegroundColor = ConsoleColor.Red;
-            Console.WriteLine("Sorted by author's surname");
-            Console.ResetColor();
-            mag.SortArticlesByAuthorSurname();
-            mag.PrintArticles();
-            Console.ForegroundColor = ConsoleColor.Red;
-            Console.WriteLine("Sorted by rating");
-            Console.ResetColor();
-            mag.SortArticlesByRating();
-            mag.PrintArticles();
-            #endregion
-
-            #region testcollections
-
-            int size = -1;
-            Console.ForegroundColor = ConsoleColor.White;
-            Console.Write("Size of collection: ");
-            Console.ResetColor();
-            while (!int.TryParse(Console.ReadLine(), out size) || size < 0)
-            {
-                Console.ForegroundColor = ConsoleColor.Red;
-                Console.WriteLine("Incorrect number, try again:");
-                Console.ResetColor();
-            }
+            // 2. Change elements properties
+            m1.Date = new DateTime(2000, 1,1);
+            m1.Printing= 999;
             
-            GenerateElement<Edition, Magazine> generatorFunc = delegate(int j)
-            {
-                try
-                {
-                    var key = new Edition("Edition"+j.ToString(), new DateTime(j%9999+1, (j % 12)+1, 1 + (j % 28)), j*j);
-                    var value = new Magazine((Frequency)(j%3), "Mag"+j.ToString(), new DateTime(j%9999+1 , 1+ j % 12, 1 + j %28), j);
-                    return new KeyValuePair<Edition, Magazine>(key, value);
+            // 3. Replacing element
+            mgCollection.Replace(m2, m3);
+            
+            // 4. Change properties of excluded element
+            m2.Printing = 10;
 
-                }
-                catch (Exception e)
-                {
-                    Console.ForegroundColor = ConsoleColor.Red;
-                    Console.WriteLine(j);
-                    Console.WriteLine(e);
-                    throw;
-                }
-                
-            };
-            TestCollections<Edition, Magazine>
-                collections = new TestCollections<Edition, Magazine>(size, generatorFunc);
-            Console.ForegroundColor = ConsoleColor.Blue;
-            Console.WriteLine("String List:");
-            collections.SearchStringList();
-            Console.WriteLine("____________________________________________");
-            Console.ForegroundColor = ConsoleColor.Magenta;
-            Console.WriteLine("TList");
-            collections.SearchTList();
-            Console.WriteLine("____________________________________________");
-            Console.ForegroundColor = ConsoleColor.Cyan;
-            Console.WriteLine("String dict by key");
-            collections.SearchStringDictByKey();
-            Console.WriteLine("____________________________________________");
-            Console.ForegroundColor = ConsoleColor.Yellow;
-            Console.WriteLine("String dict by value");
-            collections.SearchStringDictByValue();
-            Console.WriteLine("____________________________________________");
-            Console.ForegroundColor = ConsoleColor.Blue;
-            Console.WriteLine("TDict by key");
-            collections.SearchTDictByKey();
-            Console.WriteLine("____________________________________________");
-            Console.ForegroundColor = ConsoleColor.Magenta;
-            Console.WriteLine("TDict by value");
-            collections.SearchTDictByValue();
+            Console.WriteLine("\n\n             Changes:\n");
+            Console.WriteLine(listener);
+            
 
             #endregion
+            
+            
+            //#region lab3
 
-
-            #endregion
+            // #region init
+            //
+            // Random rnd = new Random();
+            // Magazine mag = new Magazine(Frequency.Monthly, "Пятёрочка", new DateTime(2021, 10, 26), 69);
+            // Person[] persons =
+            // {
+            //     new Person("Lawrence", " Thomas", new DateTime(1975, 04, 26)),
+            //     new Person("Larry", "Patterson", new DateTime(1957, 8, 30)),
+            //     new Person("Beverly", "Kelly", new DateTime(1983, 7, 25)),
+            //     new Person("Kathleen", "Anderson", new DateTime(1935, 3, 15)),
+            //     new Person("Lillian", "Martin", new DateTime(rnd.Next(1950, 2003), rnd.Next(1, 12), rnd.Next(1, 31))),
+            //     new Person("Aaron", "Evans", new DateTime(rnd.Next(1950, 2003), rnd.Next(1, 12), rnd.Next(1, 31))),
+            //     new Person("Tina", "Taylor", new DateTime(rnd.Next(1950, 2003), rnd.Next(1, 12), rnd.Next(1, 31))),
+            //     new Person("Tina", "Taylor", new DateTime(rnd.Next(1950, 2003), rnd.Next(1, 12), rnd.Next(1, 31))),
+            //     new Person("Janice", "Morgan", new DateTime(rnd.Next(1950, 2003), rnd.Next(1, 12), rnd.Next(1, 31))),
+            //     new Person("Judy", "Hall", new DateTime(rnd.Next(1950, 2003), rnd.Next(1, 12), rnd.Next(1, 31))),
+            //     new Person("Judy", "Hall", new DateTime(rnd.Next(1950, 2003), rnd.Next(1, 12), rnd.Next(1, 31))),
+            //     new Person("Evelyn", "Johnson", new DateTime(rnd.Next(1950, 2003), rnd.Next(1, 12), rnd.Next(1, 31))),
+            // };
+            // Article[] articles =
+            // {
+            //     new Article(persons[rnd.Next(9)], "How face masks affect young children", rnd.Next(4)+rnd.NextDouble()),
+            //     new Article(persons[rnd.Next(9)], "Why \"Agents of Doom\" threaten the world",
+            //         rnd.Next(4)+rnd.NextDouble()),
+            //     new Article(persons[rnd.Next(9)], "Scotland's experiment to value nature", rnd.Next(4)+rnd.NextDouble()),
+            //     new Article(persons[rnd.Next(9)], "A better use for half Earth's land?", rnd.Next(4)+rnd.NextDouble()),
+            //     new Article(persons[rnd.Next(9)], "Can you grow coffee at home?", rnd.Next(4)+rnd.NextDouble()),
+            //     new Article(persons[rnd.Next(9)], "America's greatest source of emissions", rnd.Next(4)+rnd.NextDouble()),
+            //     new Article(persons[rnd.Next(9)], "Do we really need third vaccine doses?", rnd.Next(4)+rnd.NextDouble()),
+            //     new Article(persons[rnd.Next(9)], "Should young kids get the Covid-19 jab?", rnd.Next(4)+rnd.NextDouble()),
+            //     new Article(persons[rnd.Next(9)], "The unexpected benefits of tiger sharks", rnd.Next(4)+rnd.NextDouble()),
+            //     new Article(persons[rnd.Next(9)], "Costa Rica's answer to 'range anxiety'", rnd.Next(4)+rnd.NextDouble()),
+            // };
+            // Person[] editors_to_add = new Person[5];
+            // int i = 0;
+            // while (i < editors_to_add.Length)
+            // {
+            //     int j = rnd.Next(9);
+            //     if (Array.IndexOf(editors_to_add, persons[j]) != -1) continue;
+            //     editors_to_add[i++] = persons[j];
+            // }
+            // #endregion
+            //
+            // #region sort
+            //
+            // mag.AddArticles(articles);
+            // mag.AddEditors(editors_to_add);
+            // mag.PrintArticles();
+            // mag.SortArticlesByTitle();
+            // Console.ForegroundColor = ConsoleColor.Red;
+            // Console.WriteLine("Sorted by title");
+            // Console.ResetColor();
+            // mag.PrintArticles();
+            // Console.ForegroundColor = ConsoleColor.Red;
+            // Console.WriteLine("Sorted by author's surname");
+            // Console.ResetColor();
+            // mag.SortArticlesByAuthorSurname();
+            // mag.PrintArticles();
+            // Console.ForegroundColor = ConsoleColor.Red;
+            // Console.WriteLine("Sorted by rating");
+            // Console.ResetColor();
+            // mag.SortArticlesByRating();
+            // mag.PrintArticles();
+            // #endregion
+            //
+            // #region testcollections
+            //
+            // int size = -1;
+            // Console.ForegroundColor = ConsoleColor.White;
+            // Console.Write("Size of collection: ");
+            // Console.ResetColor();
+            // while (!int.TryParse(Console.ReadLine(), out size) || size < 0)
+            // {
+            //     Console.ForegroundColor = ConsoleColor.Red;
+            //     Console.WriteLine("Incorrect number, try again:");
+            //     Console.ResetColor();
+            // }
+            //
+            // GenerateElement<Edition, Magazine> generatorFunc = delegate(int j)
+            // {
+            //     try
+            //     {
+            //         var key = new Edition("Edition"+j.ToString(), new DateTime(j%9999+1, (j % 12)+1, 1 + (j % 28)), j*j);
+            //         var value = new Magazine((Frequency)(j%3), "Mag"+j.ToString(), new DateTime(j%9999+1 , 1+ j % 12, 1 + j %28), j);
+            //         return new KeyValuePair<Edition, Magazine>(key, value);
+            //
+            //     }
+            //     catch (Exception e)
+            //     {
+            //         Console.ForegroundColor = ConsoleColor.Red;
+            //         Console.WriteLine(j);
+            //         Console.WriteLine(e);
+            //         throw;
+            //     }
+            //     
+            // };
+            // TestCollections<Edition, Magazine>
+            //     collections = new TestCollections<Edition, Magazine>(size, generatorFunc);
+            // Console.ForegroundColor = ConsoleColor.Blue;
+            // Console.WriteLine("String List:");
+            // collections.SearchStringList();
+            // Console.WriteLine("____________________________________________");
+            // Console.ForegroundColor = ConsoleColor.Magenta;
+            // Console.WriteLine("TList");
+            // collections.SearchTList();
+            // Console.WriteLine("____________________________________________");
+            // Console.ForegroundColor = ConsoleColor.Cyan;
+            // Console.WriteLine("String dict by key");
+            // collections.SearchStringDictByKey();
+            // Console.WriteLine("____________________________________________");
+            // Console.ForegroundColor = ConsoleColor.Yellow;
+            // Console.WriteLine("String dict by value");
+            // collections.SearchStringDictByValue();
+            // Console.WriteLine("____________________________________________");
+            // Console.ForegroundColor = ConsoleColor.Blue;
+            // Console.WriteLine("TDict by key");
+            // collections.SearchTDictByKey();
+            // Console.WriteLine("____________________________________________");
+            // Console.ForegroundColor = ConsoleColor.Magenta;
+            // Console.WriteLine("TDict by value");
+            // collections.SearchTDictByValue();
+            //
+            // #endregion
+            //
+            //
+            // #endregion
 
             #region lab2
 
