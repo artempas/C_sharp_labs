@@ -4,6 +4,8 @@ using System.Text;
 
 namespace sharp_lab_1
 {
+    [Serializable]
+
     public class Article : IRateAndCopy, IComparable, IComparer<Article>
     {
         #region Fields

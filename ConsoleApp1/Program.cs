@@ -8,11 +8,13 @@ using Microsoft.VisualBasic;
 
 namespace sharp_lab_1
 {
+    [Serializable]
+
     public enum Frequency
     {
-        Weekly=0,
-        Monthly=1,
-        Yearly=2
+        Weekly = 0,
+        Monthly = 1,
+        Yearly = 2
     };
 
     public delegate KeyValuePair<TKey, TValue> GenerateElement<TKey, TValue>(int j);
@@ -21,44 +23,93 @@ namespace sharp_lab_1
     {
         static void Main(string[] args)
         {
-            #region lab4
-            KeySelector<String> selector = magazine => magazine.GetHashCode().ToString();
-            MagazineCollection<string> mgCollection = new MagazineCollection<string>(selector);
-            mgCollection.CollectionName = "Magazine Collection";
+            #region lab5
 
-            Magazine m1 = new Magazine();
-            Magazine m2 = new Magazine( Frequency.Monthly,"Some Name" ,new DateTime(1970,1,1), 999_999);
-            Magazine m3 = new Magazine(Frequency.Monthly,"New name",new DateTime(1980,1,1), 999_999);
+            var m = new Magazine(Frequency.Yearly, "Doesn't really matter", new DateTime(1969, 6, 9), 69);
+            m.AddArticles(new Article());
 
-            Listener listener = new Listener();
-            // changes in collections
-            mgCollection.MagazineChanged += listener.NewEntryForCollection; 
+            //Console.WriteLine("Source elements:");
+            //Console.WriteLine(m);
 
-            // changes in properties
-            //m1.PropertyChanged += listener.NewEntryForProperty;
-            //m2.PropertyChanged += listener.NewEntryForProperty;
-            
-            // 1. Add new elements
-            mgCollection.AddMagazine(m1);
-            mgCollection.AddMagazine(m2);
-            
-            // 2. Change elements properties
-            m1.Date = new DateTime(2000, 1,1);
-            m1.Printing= 999;
-            
-            // 3. Replacing element
-            mgCollection.Replace(m2, m3);
-            
-            // 4. Change properties of excluded element
-            m2.Printing = 10;
+            var mCopy = m.DeepCopy();
+            //Console.WriteLine("Copied element:");
+            //Console.WriteLine(mCopy);
 
-            Console.WriteLine("\n\n             Changes:\n");
-            Console.WriteLine(listener);
-            
+            Console.WriteLine("Enter filename: ");
+            string filename;
+            do
+            {
+                filename = Console.ReadLine();
+            } while (filename.Length < 1);
+
+            var fi = new FileInfo(filename);
+            if (fi.Exists)
+            {
+                mCopy.Load(filename);
+                Console.WriteLine("Loaded object:");
+                Console.WriteLine(mCopy);
+            }
+            else
+            {
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.WriteLine("There is no such file in this directory!");
+                fi.Create().Close();
+                Console.ForegroundColor = ConsoleColor.Green;
+                Console.WriteLine("File was created");
+                Console.ResetColor();
+            }
+
+            mCopy.AddFromConsole();
+            mCopy.Save(filename);
+            Console.WriteLine(mCopy);
+
+            Magazine.Load(filename, mCopy);
+            Console.WriteLine("\nAdd one more article:");
+            mCopy.AddFromConsole();
+            Console.WriteLine("Final version:");
+            Console.WriteLine(mCopy);
+            Magazine.Save(filename, mCopy);
 
             #endregion
-            
-            
+
+            #region lab4
+
+            // KeySelector<String> selector = magazine => magazine.GetHashCode().ToString();
+            // MagazineCollection<string> mgCollection = new MagazineCollection<string>(selector);
+            // mgCollection.CollectionName = "Magazine Collection";
+            //
+            // Magazine m1 = new Magazine();
+            // Magazine m2 = new Magazine( Frequency.Monthly,"Some Name" ,new DateTime(1970,1,1), 999_999);
+            // Magazine m3 = new Magazine(Frequency.Monthly,"New name",new DateTime(1980,1,1), 999_999);
+            //
+            // Listener listener = new Listener();
+            // // changes in collections
+            // mgCollection.MagazineChanged += listener.NewEntryForCollection; 
+            //
+            // // changes in properties
+            // //m1.PropertyChanged += listener.NewEntryForProperty;
+            // //m2.PropertyChanged += listener.NewEntryForProperty;
+            //
+            // // 1. Add new elements
+            // mgCollection.AddMagazine(m1);
+            // mgCollection.AddMagazine(m2);
+            //
+            // // 2. Change elements properties
+            // m1.Date = new DateTime(2000, 1,1);
+            // m1.Printing= 999;
+            //
+            // // 3. Replacing element
+            // mgCollection.Replace(m2, m3);
+            //
+            // // 4. Change properties of excluded element
+            // m2.Printing = 10;
+            //
+            // Console.WriteLine("\n\n             Changes:\n");
+            // Console.WriteLine(listener);
+            //
+
+            #endregion
+
             //#region lab3
 
             // #region init

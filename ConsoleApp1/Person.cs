@@ -5,6 +5,8 @@ using System.Text;
 
 namespace sharp_lab_1
 {
+    [Serializable]
+
     public class Person
     {
 

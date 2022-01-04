@@ -4,6 +4,8 @@ using System.IO;
 
 namespace sharp_lab_1
 {
+    [Serializable]
+
     public class Edition: INotifyPropertyChanged
     {
         #region Fields

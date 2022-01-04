@@ -1,10 +1,15 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
+using System.Runtime.Serialization;
+using System.Runtime.Serialization.Formatters.Binary;
 using System.Text;
 
 namespace sharp_lab_1
 {
+    [Serializable]
+
     public class Magazine : Edition
     {
         #region Fields
@@ -69,6 +74,56 @@ namespace sharp_lab_1
         #endregion
 
         #region METHODS
+        
+        public static bool Save(string filename, Magazine obj)
+        {
+            try
+            {
+                var formatter = new BinaryFormatter();
+                using (var fs = new FileStream(filename, FileMode.OpenOrCreate))
+                {
+                    formatter.Serialize(fs, obj);
+                }
+
+                return true;
+            }
+            catch (Exception e)
+            {
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.WriteLine("Error in static Save");
+                Console.WriteLine(e.Message);
+                Console.ResetColor();
+                return false;
+            }
+        }
+
+        public static bool Load(string filename, Magazine obj)
+        {
+            try
+            {
+                var formatter = new BinaryFormatter();
+                using (var fs = new FileStream(filename, FileMode.OpenOrCreate))
+                {
+                    var m = (Magazine) formatter.Deserialize(fs);
+                    obj.name = m.name;
+                    obj.date = m.date;
+                    obj.printing = m.printing;
+                    obj._frequency = m._frequency;
+                    
+                    obj._articles.Clear();
+                    obj._articles.AddRange(m._articles);
+                    
+                    obj._editors.Clear();
+                    obj._editors.AddRange(m._editors);
+
+                    return true;
+                }
+            }
+            catch
+            {
+                return false;
+            }
+        }
 
         public void SortArticlesByTitle()
         {
@@ -172,16 +227,101 @@ namespace sharp_lab_1
             return
                 $"Name:{name} | Date:{date} | Printing: {printing} | frequency: {_frequency} | Authors: {_authors.Count} | Editors: {_editors.Count} | Atricles: {_articles.Count}";
         }
-
-        public override object DeepCopy()
+        
+        public bool Save(string filename)
         {
-            Magazine newOne = new Magazine(_frequency, name, date, printing);
-            newOne._articles = _articles;
-            newOne._authors = _authors;
-            newOne._editors = _editors;
-            return newOne;
+            try
+            {
+                var formatter = new BinaryFormatter();
+                using (var fs = new FileStream(filename, FileMode.OpenOrCreate))
+                {
+                    formatter.Serialize(fs, this);
+                }
+
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
+           
+        }
+        
+        public bool Load(string filename)
+        {
+            try
+            {
+                var formatter = new BinaryFormatter();
+                using (var fs = new FileStream(filename, FileMode.OpenOrCreate))
+                {
+                    var m = (Magazine) formatter.Deserialize(fs);
+                    name = m.name;
+                    printing = m.printing;
+                    _frequency = m._frequency;
+                    _articles.Clear();
+                    _articles.AddRange(m._articles);
+                    _editors.Clear();
+                    _editors.AddRange(m._editors);
+
+                    return true;
+                }
+            }
+            catch
+            {
+                return false;
+            }
+
         }
 
+        public new Magazine DeepCopy()
+        {
+            try
+            {
+                MemoryStream stream = new MemoryStream();
+                IFormatter formatter = new BinaryFormatter();
+                formatter.Serialize(stream, this);
+                stream.Seek(0, SeekOrigin.Begin);
+                return (Magazine) formatter.Deserialize(stream);
+            }
+            catch
+            {
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.WriteLine("Something goes wrong");
+                Console.ResetColor();
+                return new Magazine();
+            }
+            
+        }
+
+        
+        public bool AddFromConsole()
+        {
+            try
+            {
+                Console.WriteLine(
+                    "Enter article info in format:\n" +
+                    "authorName-authorSurname-birthdayYear-birthdayMonth-birthdayDay-articleName-rate"
+                );
+                string[] words = Console.ReadLine().Split('-', StringSplitOptions.RemoveEmptyEntries);
+                var tempAuthor = new Person(words[0], words[1],
+                    new DateTime(
+                        Convert.ToInt32(words[2]),
+                        Convert.ToInt32(words[3]),
+                        Convert.ToInt32(words[4])));
+                _articles.Add(
+                    new Article(tempAuthor, words[5], Convert.ToDouble(words[6])));
+                return true;
+            }
+            catch
+            {
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.WriteLine("Invalid input");
+                Console.ResetColor();
+                return false;
+            }
+            
+        }
+        
         public IEnumerator GetEnumerator()
         {
             return new MagazineEnumerator(_articles, _editors);
